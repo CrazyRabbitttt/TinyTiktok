@@ -58,17 +58,18 @@ func Register(c *gin.Context) {
 		//下面不需要设置Id了，因为我们在数据库中设置了自增Id了
 		atomic.AddInt64(&userIdsequence, 1) //Id是递增的，每次都增加1，但是需要从users中
 		newUser := User{
-			Id:   userIdsequence,
+			//Id:   userIdsequence,
 			Name: username,
 		}
 		//usersLoginInfo[token] = newUser
-		db.Create(newUser) //将数据添加到表中,创建数据添加到User表中，没有密码
+		db.Create(&newUser) //将数据添加到表中,创建数据添加到User表中，没有密码
 		//数据库自动添加Id，我们还是需要查出来然后进行返回回去
 
-		fmt.Println("The newUser's id :", newUser.Id)
+		db.Where("Name=?", newUser.Name).Find(&newUser)
+		//fmt.Println("The newUser's id :", newUser.Id)
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{Statuscode: 0, StatusMsg: "Successfully made a new User"},
-			UserId:   userIdsequence,
+			UserId:   newUser.Id,
 			Token:    username + password,
 		})
 	}
