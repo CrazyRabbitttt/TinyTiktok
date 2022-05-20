@@ -102,16 +102,13 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	token := c.Query("token")
+	userId := c.Query("user_id")
 
-	if user, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{Statuscode: 0},
-			User:     user,
-		})
-	} else {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{Statuscode: 1, StatusMsg: "User don't exist"},
-		})
-	}
+	var user User
+	db.Where("Id = ?", userId).First(&user)
+
+	c.JSON(http.StatusOK, UserResponse{
+		Response: Response{Statuscode: 0, StatusMsg: "查询用户信息成功"},
+		User:     user,
+	})
 }

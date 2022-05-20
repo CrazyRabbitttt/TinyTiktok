@@ -25,7 +25,7 @@ func initRouter(r *gin.Engine) {
 
 	apiRouter.POST("/user/login/", controller.Login)
 
-	apiRouter.GET("/user/", controller.UserInfo)
+	apiRouter.GET("/user/yy/", controller.UserInfo)
 
 	apiRouter.POST("/publish/action/", controller.Publish)
 
