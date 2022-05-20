@@ -57,16 +57,22 @@ func Register(c *gin.Context) {
 		//新创建一个user
 		//下面不需要设置Id了，因为我们在数据库中设置了自增Id了
 		atomic.AddInt64(&userIdsequence, 1) //Id是递增的，每次都增加1，但是需要从users中
-		newUser := User{
-			//Id:   userIdsequence,
+
+		newLoginInfo := UserLoginInfo{ //LoginInfo
+			Name:  username,
+			Token: token,
+		}
+
+		newUser := User{ //往用户表中插入Name，Id由数据库进行自增
 			Name: username,
 		}
-		//usersLoginInfo[token] = newUser
 		db.Create(&newUser) //将数据添加到表中,创建数据添加到User表中，没有密码
-		//数据库自动添加Id，我们还是需要查出来然后进行返回回去
 
 		db.Where("Name=?", newUser.Name).Find(&newUser)
-		//fmt.Println("The newUser's id :", newUser.Id)
+
+		newLoginInfo.Id = newUser.Id //获得用户Id给到LoginInfo
+		db.Create(&newLoginInfo)     //更新Login表
+
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{Statuscode: 0, StatusMsg: "Successfully made a new User"},
 			UserId:   newUser.Id,
@@ -81,31 +87,18 @@ func Login(c *gin.Context) {
 
 	token := username + password
 
-	var user UserLoginInfo
+	var userInfo UserLoginInfo
 	//根据token进行查找
-	db.Where("Token = ?", "token").Find(&user) //查询到的结果拿到user中
+	db.Where("Token = ?", token).Find(&userInfo) //查询到的结果拿到user中
 
-	fmt.Println("Login, user: ", user.Name)
+	fmt.Println("Login, user: ", userInfo.Name)
 
 	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{Statuscode: 0, StatusMsg: "Weclome " + username},
-		UserId:   user.Id,
+		Response: Response{Statuscode: 0, StatusMsg: "Weclome " + userInfo.Name},
+		UserId:   userInfo.Id,
 		Token:    token,
 	})
 
-	//下面是从内存中map进行查询，只能单次查询
-	/*
-		if user, exist := usersLoginInfo[token]; exist {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{Statuscode: 0, StatusMsg: "Weclome " + username},
-				UserId:   user.Id,
-				Token:    token,
-			})
-		} else {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{Statuscode: 1, StatusMsg: "User doesn't exist"},
-			})
-		}*/
 }
 
 func UserInfo(c *gin.Context) {
