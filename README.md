@@ -22,3 +22,4 @@
 #### Publish
 > 进行文件的上传，目前仅仅是上传到./public目录下面，通过传递token进行User的查找
 > 首先从`UserLoginInfo`中根据`token`找到`Id`,再次回表进行查询 `user`
+> PostMan测试成功，在本地./public中上传
