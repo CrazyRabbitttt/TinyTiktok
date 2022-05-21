@@ -12,6 +12,18 @@ var DemoVideos = []Video{
 	},
 }
 
+var DemoVideos1 = []Video{
+	{
+		Id:            2,
+		Author:        DemoUser,
+		PlayUrl:       "./public/24_vedio1.mov",
+		CoverUrl:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
+		FavoriteCount: 23,
+		CommentCount:  0,
+		IsFavorite:    true,
+	},
+}
+
 var DemoComments = []Comment{
 	{
 		Id:         1,
