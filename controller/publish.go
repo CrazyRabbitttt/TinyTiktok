@@ -46,5 +46,13 @@ func Publish(c *gin.Context) {
 		Statuscode: 0,
 		StatusMsg:  finalName + " uploaded usccessfully!",
 	})
+}
 
+func PublishList(c *gin.Context) {
+	c.JSON(http.StatusOK, VideoListResponse{
+		Response: Response{
+			Statuscode: 0,
+		},
+		VideoList: DemoVideos,
+	})
 }
