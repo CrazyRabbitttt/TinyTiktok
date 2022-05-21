@@ -11,7 +11,7 @@ var db *gorm.DB
 func InitDb() {
 	//进行数据库的连接
 
-	dsn := "root:shaoguixin1+@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:woshimima@tcp(127.0.0.1:3306)/tiktok?charset=utf8mb4&parseTime=True&loc=Local"
 
 	db1, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
