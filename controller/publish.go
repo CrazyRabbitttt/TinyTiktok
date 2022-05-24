@@ -35,6 +35,7 @@ func Publish(c *gin.Context) {
 	finalName := fmt.Sprintf("%d_%s", user.Id, filename) //最终存储的文件名称
 	saveFile := filepath.Join("./public/", finalName)    //拼接成为绝对路径
 
+	fmt.Println("The savepath is : ", saveFile)
 	if err := c.SaveUploadedFile(data, saveFile); err != nil { //进行文件的存储
 		c.JSON(http.StatusOK, Response{
 			Statuscode: 1,
@@ -44,7 +45,7 @@ func Publish(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, Response{
 		Statuscode: 0,
-		StatusMsg:  finalName + " uploaded usccessfully!",
+		StatusMsg:  finalName + " uploaded successfully!",
 	})
 }
 
