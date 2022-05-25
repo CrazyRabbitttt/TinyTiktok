@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"sync/atomic"
 )
 
 //首先使用内存进行管理，内存中的map
@@ -18,48 +17,38 @@ var usersLoginInfo = map[string]User{
 	},
 }
 
-var userIdsequence = int64(1) //进行id自增
-
 func Register(c *gin.Context) {
+
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
-
-	fmt.Println(token)
-
-	//传入token查看是否是存在的
-	if _, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			//如果存在了就返回说已经存在了
-			Response: Response{Statuscode: 1, StatusMsg: "User already exist"},
-		})
-	} else {
-		//新创建一个user
-		//下面不需要设置Id了，因为我们在数据库中设置了自增Id了
-		atomic.AddInt64(&userIdsequence, 1) //Id是递增的，每次都增加1，但是需要从users中
-
-		newLoginInfo := UserLoginInfo{ //LoginInfo
-			Name:  username,
-			Token: token,
-		}
-
-		newUser := User{ //往用户表中插入Name，Id由数据库进行自增
-			Name: username,
-		}
-		db.Create(&newUser) //将数据添加到表中,创建数据添加到User表中，没有密码
-
-		db.Where("Name=?", newUser.Name).Find(&newUser)
-
-		newLoginInfo.UserId = newUser.Id //获得用户Id给到LoginInfo
-		db.Create(&newLoginInfo)         //更新Login表
-
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{Statuscode: 0, StatusMsg: "Successfully made a new User"},
-			UserId:   newUser.Id,
-			Token:    username + password,
+	if username == "" || password == "" {
+		c.JSON(http.StatusBadRequest, UserLoginResponse{
+			Response: Response{Statuscode: 1, StatusMsg: "用户名或者密码不能为空！"},
 		})
 	}
+	token := username + password + "lala"
+
+	var dbUser User
+	dbUser.Id = 0
+	dbUser.Name = username
+	dbUser.Password = password
+	db.Table("tik_user").Where("Name = ?", username).Find(&dbUser)
+	fmt.Println("传入的token:", token)
+	if dbUser.Id > 0 {
+		c.JSON(http.StatusBadRequest, UserLoginResponse{
+			Response: Response{Statuscode: 1, StatusMsg: "抱歉，该用户已经存在！"},
+		})
+	}
+	db.Table("tik_user").Create(&dbUser)
+
+	//传入的是&，目前已经是
+	c.JSON(http.StatusOK, UserLoginResponse{
+		Response: Response{Statuscode: 0, StatusMsg: "用户" + username + "注册成功！"},
+		UserId:   dbUser.Id,
+		Token:    token,
+	})
+
 }
 
 func Login(c *gin.Context) {

@@ -1,11 +1,8 @@
 package controller
 
-import "gorm.io/gorm"
-
 //用户登陆的时候的结构体，需要添加上token，同时添加好Name & Id
 
 type UserLoginInfo struct {
-	gorm.Model
 	UserId int64  `json:"userId"` //进行索引是哪一个User
 	Name   string `json:"name,omitempty"`
 	Token  string `json:"token"`
@@ -14,7 +11,6 @@ type UserLoginInfo struct {
 //基本的Response类型
 
 type Response struct {
-	gorm.Model
 	Statuscode int32  `json:"status_code"`
 	StatusMsg  string `json:"status_msg,omitempty"`
 }
@@ -31,7 +27,6 @@ type UserLoginResponse struct {
 }
 
 type Comment struct {
-	gorm.Model
 	Id         int64  `json:"id,omitempty"`
 	User       User   `json:"user"`
 	Content    string `json:"content,omitempty"`
@@ -39,8 +34,7 @@ type Comment struct {
 }
 
 type Video struct {
-	gorm.Model
-	Id            int64  `json:"id,omitempty"` //可省略？
+	Id            uint   `json:"id,omitempty"` //可省略？
 	Author        User   `json:"author"`
 	PlayUrl       string `json:"play_url" json:"play_url,omitempty"`
 	CoverUrl      string `json:"cover_url,omitempty"`      //封面地址
@@ -51,13 +45,10 @@ type Video struct {
 }
 
 type User struct {
-	gorm.Model
-	VideoId       int64         `json:"video_id"` //通过VideoId进行索引Vedio
-	CommentId     int64         `json:"comment_id"`
-	UserLoginInfo UserLoginInfo `json:"user_login_info"`
-	Id            int64         `gorm:"auto_increment"`
-	Name          string        `json:"name,omitempty"`
-	FollowCount   int64         `json:"follow_count,omitempty"`   //关注数目
-	FollowerCount int64         `json:"follower_count,omitempty"` //粉丝数目
-	IsFollow      bool          `json:"is_follow,omitempty"`      //是否关注了
+	Id            int64  `json:"id"`
+	Name          string `json:"name,omitempty"`
+	Password      string `json:"password"`
+	FollowCount   int64  `json:"follow_count,omitempty"`   //关注数目
+	FollowerCount int64  `json:"follower_count,omitempty"` //粉丝数目
+	IsFollow      bool   `json:"is_follow,omitempty"`      //是否关注了
 }
