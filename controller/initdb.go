@@ -24,4 +24,5 @@ func InitDb() {
 		fmt.Println("数据库连接成功！")
 	}
 
+	db.AutoMigrate(&Video{}, &Comment{}, &User{}, &UserLoginInfo{})
 }

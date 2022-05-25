@@ -9,6 +9,7 @@ var DemoVideos = []Video{
 		FavoriteCount: 99,
 		CommentCount:  0,
 		IsFavorite:    true,
+		TimeChuo:      22,
 	},
 	{
 		Id:            4,
@@ -18,6 +19,7 @@ var DemoVideos = []Video{
 		FavoriteCount: 893,
 		CommentCount:  0,
 		IsFavorite:    true,
+		TimeChuo:      23,
 	},
 	{
 		Id:            5,
@@ -27,6 +29,7 @@ var DemoVideos = []Video{
 		FavoriteCount: 299,
 		CommentCount:  0,
 		IsFavorite:    true,
+		TimeChuo:      24,
 	},
 	{
 		Id:            5,
@@ -36,18 +39,7 @@ var DemoVideos = []Video{
 		FavoriteCount: 23,
 		CommentCount:  0,
 		IsFavorite:    true,
-	},
-}
-
-var DemoVideos1 = []Video{
-	{
-		Id:            2,
-		Author:        DemoUser,
-		PlayUrl:       "https://media.w3.org/2010/05/sintel/trailer.mp4",
-		CoverUrl:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
-		FavoriteCount: 23,
-		CommentCount:  0,
-		IsFavorite:    true,
+		TimeChuo:      25,
 	},
 }
 
@@ -64,6 +56,6 @@ var DemoUser = User{
 	Id:            1,
 	Name:          "Shaoguixin",
 	FollowCount:   10000,
-	FollowerCount: 1000000,
+	FollowerCount: 19990000,
 	IsFollow:      false,
 }

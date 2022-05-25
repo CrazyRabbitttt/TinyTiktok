@@ -17,6 +17,8 @@ type FeedResponse struct {
 //Feed same demo video list for every request
 
 func Feed(c *gin.Context) { //现在返回的是StatusCode :0 & Unixcurtime :23563263
+
+	//进行VedioList的查找
 	c.JSON(http.StatusOK, FeedResponse{ //将给的结构体序列化成为Json， 传到response Body中
 		Response:  Response{Statuscode: 0}, //成功就是返回0
 		VideoList: DemoVideos,              //Video List

@@ -28,14 +28,15 @@ func Publish(c *gin.Context) {
 	var user User
 	var userlogin UserLoginInfo
 	db.Where("Token = ?", token).First(&userlogin)
-	var queryId = userlogin.Id
+	var queryId = userlogin.UserId
 	db.Where("Id = ?", queryId).First(&user) //通过两张表进行查询
 
-	filename := filepath.Base(data.Filename)             //去除掉路径的文件名称
-	finalName := fmt.Sprintf("%d_%s", user.Id, filename) //最终存储的文件名称
-	saveFile := filepath.Join("./public/", finalName)    //拼接成为绝对路径
+	filename := filepath.Base(data.Filename)                                   //去除掉路径的文件名称
+	finalName := fmt.Sprintf("%d_%s", user.Id, filename)                       //最终存储的文件名称
+	saveFile := filepath.Join("http://192.168.43.104:8080/public/", finalName) //拼接成为绝对路径
 
 	fmt.Println("The savepath is : ", saveFile)
+
 	if err := c.SaveUploadedFile(data, saveFile); err != nil { //进行文件的存储
 		c.JSON(http.StatusOK, Response{
 			Statuscode: 1,

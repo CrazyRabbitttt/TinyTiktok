@@ -7,14 +7,6 @@ import (
 	"sync/atomic"
 )
 
-//用户登陆的时候的结构体，需要添加上token，同时添加好Name & Id
-
-type UserLoginInfo struct {
-	Id    int64  `json:"id,omitempty"`
-	Name  string `json:"name,omitempty"`
-	Token string
-}
-
 //首先使用内存进行管理，内存中的map
 var usersLoginInfo = map[string]User{
 	"shaoguixinwoshimima": {
@@ -27,17 +19,6 @@ var usersLoginInfo = map[string]User{
 }
 
 var userIdsequence = int64(1) //进行id自增
-
-type UserResponse struct {
-	Response
-	User User `json:"user"`
-}
-
-type UserLoginResponse struct {
-	Response
-	UserId int64  `json:"user_id,omitempty"`
-	Token  string `json:"token"`
-}
 
 func Register(c *gin.Context) {
 	username := c.Query("username")
@@ -70,8 +51,8 @@ func Register(c *gin.Context) {
 
 		db.Where("Name=?", newUser.Name).Find(&newUser)
 
-		newLoginInfo.Id = newUser.Id //获得用户Id给到LoginInfo
-		db.Create(&newLoginInfo)     //更新Login表
+		newLoginInfo.UserId = newUser.Id //获得用户Id给到LoginInfo
+		db.Create(&newLoginInfo)         //更新Login表
 
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{Statuscode: 0, StatusMsg: "Successfully made a new User"},
@@ -95,7 +76,7 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, UserLoginResponse{
 		Response: Response{Statuscode: 0, StatusMsg: "Weclome " + userInfo.Name},
-		UserId:   userInfo.Id,
+		UserId:   userInfo.UserId,
 		Token:    token,
 	})
 
