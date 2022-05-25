@@ -55,30 +55,42 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
+	fmt.Println(username, password, "efhduiwefhui")
+	token := username + password + "lala"
 
-	var userInfo UserLoginInfo
-	//根据token进行查找
-	db.Where("Token = ?", token).Find(&userInfo) //查询到的结果拿到user中
+	var dbUser User
 
-	fmt.Println("Login, user: ", userInfo.Name)
+	db.Table("tik_user").Where("Name = ?", username).Find(&dbUser)
+
+	fmt.Println("Login user", dbUser.Name)
 
 	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{Statuscode: 0, StatusMsg: "Weclome " + userInfo.Name},
-		UserId:   userInfo.UserId,
+		Response: Response{Statuscode: 0, StatusMsg: "用户" + username + "登陆成功！"},
+		UserId:   dbUser.Id,
 		Token:    token,
 	})
+	//var userInfo UserLoginInfo
+	////根据token进行查找
+	//db.Where("Token = ?", token).Find(&userInfo) //查询到的结果拿到user中
+	//
+	//fmt.Println("Login, user: ", userInfo.Name)
+	//
+	//c.JSON(http.StatusOK, UserLoginResponse{
+	//	Response: Response{Statuscode: 0, StatusMsg: "Weclome " + userInfo.Name},
+	//	UserId:   userInfo.UserId,
+	//	Token:    token,
+	//})
 
 }
 
 func UserInfo(c *gin.Context) {
 	userId := c.Query("user_id")
+	var dbUser User
 
-	var user User
-	db.Where("Id = ?", userId).First(&user)
+	db.Table("tik_user").Where("user_id = ?", userId).Find(&dbUser)
 
 	c.JSON(http.StatusOK, UserResponse{
 		Response: Response{Statuscode: 0, StatusMsg: "查询用户信息成功"},
-		User:     user,
+		User:     dbUser,
 	})
 }
