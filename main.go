@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Web-Go/controller"
+	"Web-Go/ConnSql"
 	"Web-Go/route"
 	"github.com/gin-gonic/gin"
 )
@@ -10,7 +10,7 @@ func main() {
 
 	r := gin.Default() //创建gin路由
 
-	controller.InitDb() //初始化数据库连接
+	ConnSql.InitDb()
 
 	route.InitRouter(r) //进行不同路由的处理
 

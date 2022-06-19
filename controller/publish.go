@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"Web-Go/ConnSql"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -13,6 +14,7 @@ type VideoListResponse struct {
 }
 
 func Publish(c *gin.Context) {
+	db := ConnSql.ThemodelOfSql()
 	token := c.PostForm("token") //获得body传入的token
 
 	//TODO: 判断传入的token是否有对应的用户

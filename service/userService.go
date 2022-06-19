@@ -4,6 +4,7 @@ import (
 	"Web-Go/Common"
 	"Web-Go/ConnSql"
 	"Web-Go/Model"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,7 @@ const (
 )
 
 func CreateNewUser(userName string, passWord string) (Model.User, error) {
+
 	db := ConnSql.ThemodelOfSql()
 
 	//进行user的创建
@@ -23,11 +25,21 @@ func CreateNewUser(userName string, passWord string) (Model.User, error) {
 		Password: passWord,
 	}
 
-	if IfUserNotExistByName(userName) {
-		result := db.Table("tik_user").Create(&newUser)
-		return newUser, result.Error
+	result := db.Table("tik_user").Where("name = ?", userName).First(&newUser)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) { //如果没有的话，正好进行插入
+			db.Table("tik_user").Create(&newUser)
+		}
+	} else {
+		//没错就是用户已经是存在的了
+		return newUser, Common.ErrorUserExits
 	}
-	return newUser, Common.ErrorCreateUser
+
+	db.Table("tik_user").Create(&newUser)
+	db.Table("tik_user").Where("name = ?", userName).First(&newUser)
+
+	return newUser, nil
 
 }
 
@@ -35,6 +47,8 @@ func CreateNewUser(userName string, passWord string) (Model.User, error) {
 func IsUserLegal(userName string, passWord string) error {
 
 	//check userName
+	println("传入的用户名参数:", userName, passWord)
+
 	if userName == "" {
 		return Common.ErrorUserNameNull
 	}
@@ -51,20 +65,4 @@ func IsUserLegal(userName string, passWord string) error {
 	}
 
 	return nil
-}
-
-func IfUserNotExistByName(userName string) bool {
-
-	db := ConnSql.ThemodelOfSql() //获得数据库的连接
-	var dbUser Model.User
-	result := db.Table("tik_user").Where("name = ?", userName).First(&dbUser)
-
-	//检查表中是否是存在记录的
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return true
-		}
-		return false
-	}
-	return true
 }

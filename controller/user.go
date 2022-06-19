@@ -2,6 +2,8 @@ package controller
 
 import (
 	"Web-Go/Common"
+	"Web-Go/ConnSql"
+	"Web-Go/Model"
 	"Web-Go/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -9,7 +11,7 @@ import (
 )
 
 type UserIdTokenResponse struct {
-	UserId uint   `json:"user_id"`
+	UserId int64  `json:"user_id"`
 	Token  string `json:"token"`
 }
 
@@ -18,42 +20,34 @@ type UserRegisterResponse struct {
 	UserIdTokenResponse
 }
 
-func Register(c *gin.Context) {
-
+//用户注册的主函数， 最上层的接口函数
+func UserRegister(c *gin.Context) {
+	//传进来的参数的获取
 	username := c.Query("username")
 	password := c.Query("password")
 
-	if username == "" || password == "" {
-		c.JSON(http.StatusBadRequest, UserLoginResponse{
-			Response: Response{Statuscode: 1, StatusMsg: "用户名或者密码不能为空！"},
-		})
-	}
-	token := username + password + "lala"
+	//进行service层次的处理
+	registerResponse, err := UserRegisterService(username, password)
 
-	var dbUser User
-	dbUser.Id = 0
-	dbUser.Name = username
-	dbUser.Password = password
-	db.Table("tik_user").Where("name = ?", username).First(&dbUser)
-	if dbUser.Id > 0 {
-		c.JSON(http.StatusBadRequest, UserLoginResponse{
-			Response: Response{Statuscode: 1, StatusMsg: "抱歉，该用户已经存在！"},
+	//将响应进行返回
+	if err != nil {
+		c.JSON(http.StatusOK, UserRegisterResponse{
+			Response: Common.Response{
+				StatusCode: 1,
+				StatusMsg:  err.Error(),
+			},
 		})
 		return
 	}
-	db.Table("tik_user").Create(&dbUser)
-
-	//传入的是&，目前已经是
-	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{Statuscode: 0, StatusMsg: "用户" + username + "注册成功！"},
-		UserId:   dbUser.Id,
-		Token:    token,
+	c.JSON(http.StatusOK, UserRegisterResponse{
+		Response:            Common.Response{StatusCode: 0},
+		UserIdTokenResponse: registerResponse,
 	})
-
+	return
 }
 
-//用户登陆的处理函数，例如处理一下是否是存在等
-func UserregisterService(userName string, passWord string) (UserIdTokenResponse, error) {
+//用户进行登陆的处理函数，鉴别是否是存在的等
+func UserRegisterService(userName string, passWord string) (UserIdTokenResponse, error) {
 
 	var userResponse = UserIdTokenResponse{}
 
@@ -62,17 +56,28 @@ func UserregisterService(userName string, passWord string) (UserIdTokenResponse,
 	if err != nil {
 		return userResponse, err
 	}
-	//2.Create New User
-	newUser, err := service.CreateNewUser(userName, passWord)
+	//2.Create New User, 返回的对象中只是有用户名、密码
+	var newUser Model.User
+	newUser, err = service.CreateNewUser(userName, passWord)
 	if err != nil {
-		return userResponse, err
+		if err == Common.ErrorUserExits {
+			//print("Error : user exist....")
+			return userResponse, Common.ErrorUserExits //将err继续传递
+		}
 	}
-	print(newUser)
-	//3.颁发token
+	//进行token的颁发
+
+	token := newUser.Name + newUser.Password + "bing"
+
+	userResponse = UserIdTokenResponse{
+		UserId: newUser.Id,
+		Token:  token,
+	}
 	return userResponse, nil
 }
 
 func Login(c *gin.Context) {
+	db := ConnSql.ThemodelOfSql()
 	username := c.Query("username")
 	password := c.Query("password")
 
@@ -93,6 +98,7 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
+	db := ConnSql.ThemodelOfSql()
 	userId := c.Query("user_id")
 
 	var dbUser User
