@@ -1,11 +1,11 @@
-package main
+package route
 
 import (
 	"Web-Go/controller"
 	"github.com/gin-gonic/gin"
 )
 
-func initRouter(r *gin.Engine) {
+func InitRouter(r *gin.Engine) {
 	//	公共目录用来服务静态的资源
 
 	r.Static("/static", "./public")
