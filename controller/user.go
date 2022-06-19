@@ -5,8 +5,9 @@ import (
 	"Web-Go/ConnSql"
 	"Web-Go/Model"
 	"Web-Go/service"
-	"fmt"
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -16,6 +17,11 @@ type UserIdTokenResponse struct {
 }
 
 type UserRegisterResponse struct {
+	Common.Response
+	UserIdTokenResponse
+}
+
+type UserLoginResponse struct {
 	Common.Response
 	UserIdTokenResponse
 }
@@ -76,54 +82,79 @@ func UserRegisterService(userName string, passWord string) (UserIdTokenResponse,
 	return userResponse, nil
 }
 
-func Login(c *gin.Context) {
-	db := ConnSql.ThemodelOfSql()
+//用户进行登陆的接口函数
+func UserLogin(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	fmt.Println(username, password, "efhduiwefhui")
-	token := username + password + "lala"
-
-	var dbUser User
-
-	db.Table("tik_user").Where("Name = ?", username).Find(&dbUser)
-
-	fmt.Println("Login user:", dbUser)
-
+	token := username + password + "bing"
+	userLoginResponse, err := UserLoginService(username, password)
+	if err != nil {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Common.Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+	//如果用户是存在的话，返回对应的token 和 id
+	userLoginResponse.Token = token
 	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{Statuscode: 0, StatusMsg: "用户" + username + "登陆成功！"},
-		UserId:   dbUser.Id,
-		Token:    token,
+		Response:            Common.Response{StatusCode: 0, StatusMsg: username + "登陆成功！"},
+		UserIdTokenResponse: userLoginResponse,
 	})
 }
 
-func UserInfo(c *gin.Context) {
+//用于提供检查等操作的辅助Login函数
+func UserLoginService(userName string, passWrod string) (UserIdTokenResponse, error) {
 	db := ConnSql.ThemodelOfSql()
-	userId := c.Query("user_id")
-
-	var dbUser User
-
-	fmt.Println("传入的user_id", userId)
-	db.Table("tik_user").Where("id = ?", userId).Find(&dbUser)
-
-	fmt.Println("查到的用户信息：", dbUser)
-
-	if dbUser.Id != 0 {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{Statuscode: 0, StatusMsg: "查询用户信息成功"},
-			User: User{
-				Id:            dbUser.Id,
-				Name:          dbUser.Name,
-				FollowCount:   188,
-				FollowerCount: 199,
-				IsFollow:      true,
-			},
-		})
-	} else {
-		c.JSON(http.StatusBadRequest, UserLoginResponse{
-			Response: Response{Statuscode: 1, StatusMsg: "查询失败"},
-			UserId:   dbUser.Id,
-		})
+	var userResponse = UserIdTokenResponse{}
+	//进行数据的合法性检查
+	err := service.IsUserLegal(userName, passWrod)
+	if err != nil {
+		return userResponse, err
 	}
 
+	//查询用户是否是存在的
+	var tmpLoginUser Model.User
+
+	result := db.Table("tik_user").Where("name = ?", userName).First(&tmpLoginUser)
+	if result.Error != nil {
+		//如果不存在记录的话就返回错误
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return userResponse, result.Error
+		}
+	}
+	userResponse.UserId = tmpLoginUser.Id //将读取到的ID写会到response中
+	return userResponse, nil
 }
+
+//
+//func UserInfo(c *gin.Context) {
+//	db := ConnSql.ThemodelOfSql()
+//	userId := c.Query("user_id")
+//
+//	var dbUser User
+//
+//	fmt.Println("传入的user_id", userId)
+//	db.Table("tik_user").Where("id = ?", userId).Find(&dbUser)
+//
+//	fmt.Println("查到的用户信息：", dbUser)
+//
+//	if dbUser.Id != 0 {
+//		c.JSON(http.StatusOK, UserResponse{
+//			Response: Response{Statuscode: 0, StatusMsg: "查询用户信息成功"},
+//			User: User{
+//				Id:            dbUser.Id,
+//				Name:          dbUser.Name,
+//				FollowCount:   188,
+//				FollowerCount: 199,
+//				IsFollow:      true,
+//			},
+//		})
+//	} else {
+//		c.JSON(http.StatusBadRequest, UserLoginResponse{
+//			Response: Response{Statuscode: 1, StatusMsg: "查询失败"},
+//			UserId:   dbUser.Id,
+//		})
+//	}
+//
+//}
