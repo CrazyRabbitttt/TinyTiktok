@@ -1,10 +1,22 @@
 package controller
 
 import (
+	"Web-Go/Common"
+	"Web-Go/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
+
+type UserIdTokenResponse struct {
+	UserId uint   `json:"user_id"`
+	Token  string `json:"token"`
+}
+
+type UserRegisterResponse struct {
+	Common.Response
+	UserIdTokenResponse
+}
 
 func Register(c *gin.Context) {
 
@@ -38,6 +50,26 @@ func Register(c *gin.Context) {
 		Token:    token,
 	})
 
+}
+
+//用户登陆的处理函数，例如处理一下是否是存在等
+func UserregisterService(userName string, passWord string) (UserIdTokenResponse, error) {
+
+	var userResponse = UserIdTokenResponse{}
+
+	//1.Legal check
+	err := service.IsUserLegal(userName, passWord)
+	if err != nil {
+		return userResponse, err
+	}
+	//2.Create New User
+	newUser, err := service.CreateNewUser(userName, passWord)
+	if err != nil {
+		return userResponse, err
+	}
+	print(newUser)
+	//3.颁发token
+	return userResponse, nil
 }
 
 func Login(c *gin.Context) {

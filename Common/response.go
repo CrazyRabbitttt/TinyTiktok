@@ -1,4 +1,4 @@
-package common
+package Common
 
 type Response struct {
 	StatusCode int32  `json:"status_code"`
