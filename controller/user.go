@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 )
 
 type UserIdTokenResponse struct {
@@ -17,11 +18,6 @@ type UserIdTokenResponse struct {
 }
 
 type UserRegisterResponse struct {
-	Common.Response
-	UserIdTokenResponse
-}
-
-type UserLoginResponse struct {
 	Common.Response
 	UserIdTokenResponse
 }
@@ -82,6 +78,11 @@ func UserRegisterService(userName string, passWord string) (UserIdTokenResponse,
 	return userResponse, nil
 }
 
+type UserLoginResponse struct {
+	Common.Response
+	UserIdTokenResponse
+}
+
 //用户进行登陆的接口函数
 func UserLogin(c *gin.Context) {
 	username := c.Query("username")
@@ -125,6 +126,63 @@ func UserLoginService(userName string, passWrod string) (UserIdTokenResponse, er
 	}
 	userResponse.UserId = tmpLoginUser.Id //将读取到的ID写会到response中
 	return userResponse, nil
+}
+
+//用户返回信息的结构体
+type UserInfoQueryResponse struct {
+	UserId        int64  `json:"user_id"`
+	UserName      string `json:"user_name"`
+	FollowCount   int64  `json:"follow_count"`
+	FollowerCount int64  `json:"follower_count"`
+	IsFollow      bool   `json:"is_follow"`
+}
+
+type UserInfoResponse struct {
+	Common.Response
+	UserList UserInfoQueryResponse `json:"user_list"`
+}
+
+//UserInfo 用户信息的主函数，传入：user_id token
+func UserInfo(c *gin.Context) {
+	userID := c.Query("user_id")
+	userInfoResponse, err := UserInfoService(userID)
+
+	//没有写处理error的情况
+	if err != nil {
+		c.JSON(http.StatusOK, UserInfoResponse{
+			Response: Common.Response{
+				StatusCode: 0,
+				StatusMsg:  "登陆成功",
+			},
+			UserList: userInfoResponse,
+		})
+	}
+}
+
+// UserInfoService 进行用户信息的处理的函数
+func UserInfoService(userID string) (UserInfoQueryResponse, error) {
+	db := ConnSql.ThemodelOfSql()
+	var tmpUserResponse UserInfoQueryResponse
+	//将string转为int类型
+	userId, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		return tmpUserResponse, err
+	}
+
+	//下面进行数据的读取
+	var tmpuser User
+	db.Table("tik_user").Where("id = ?", userId).First(&tmpuser)
+
+	println(tmpuser.Id, tmpuser.Name, tmpuser.FollowCount)
+
+	tmpUserResponse = UserInfoQueryResponse{
+		UserId:        tmpuser.Id,
+		UserName:      tmpuser.Name,
+		FollowCount:   tmpuser.FollowCount,
+		FollowerCount: tmpuser.FollowerCount,
+		IsFollow:      false,
+	}
+	return tmpUserResponse, nil
 }
 
 //
