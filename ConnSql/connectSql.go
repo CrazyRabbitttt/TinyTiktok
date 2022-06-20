@@ -22,5 +22,8 @@ func InitDb() {
 	db = db1 //将数据传送到全局变量中
 	//进行表的创建
 	//db.AutoMigrate(&Model.Video{})
+	//db.AutoMigrate(&Model.Following{})
+	//db.AutoMigrate(&Model.Favoriete{})
+	//db.AutoMigrate(&Model.User{})
 
 }

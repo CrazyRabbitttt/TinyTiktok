@@ -27,17 +27,6 @@ type Comment struct {
 	CreateDate string `json:"create_date,omitempty"`
 }
 
-type Video struct {
-	Id            uint   `json:"id,omitempty"` //可省略？
-	Author        User   `json:"author"`
-	PlayUrl       string `json:"play_url" json:"play_url,omitempty"`
-	CoverUrl      string `json:"cover_url,omitempty"`      //封面地址
-	FavoriteCount int64  `json:"favorite_count,omitempty"` //点赞总数
-	CommentCount  int64  `json:"comment_count,omitempty"`
-	IsFavorite    bool   `json:"is_favorite,omitempty"`
-	Title         int64  `json:"time_chuo"` //时间戳
-}
-
 type User struct {
 	Id            int64  `json:"id"`
 	Name          string `json:"name,omitempty"`

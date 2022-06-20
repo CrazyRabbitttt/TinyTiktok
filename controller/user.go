@@ -13,7 +13,7 @@ import (
 )
 
 type UserIdTokenResponse struct {
-	UserId int64  `json:"user_id"`
+	UserId uint   `json:"user_id"`
 	Token  string `json:"token"`
 }
 
@@ -130,10 +130,10 @@ func UserLoginService(userName string, passWord string) (UserIdTokenResponse, er
 
 //用户返回信息的结构体
 type UserInfoQueryResponse struct {
-	Id            int64  `json:"id"`
+	Id            uint   `json:"id"`
 	Name          string `json:"name"`
-	FollowCount   int64  `json:"follow_count"`
-	FollowerCount int64  `json:"follower_count"`
+	FollowCount   uint   `json:"follow_count"`
+	FollowerCount uint   `json:"follower_count"`
 	IsFollow      bool   `json:"is_follow"`
 }
 

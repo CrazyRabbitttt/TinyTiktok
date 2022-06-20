@@ -2,7 +2,6 @@ package controller
 
 import (
 	"Web-Go/Common"
-	"Web-Go/ConnSql"
 	"Web-Go/Model"
 	"Web-Go/service"
 	"fmt"
@@ -10,58 +9,38 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"path/filepath"
+	"strconv"
 )
 
 type VideoListResponse struct {
-	Response
-	VideoList []Video `json:"video_list"`
+	Common.Response
+	VideoList []ReturnVideo `json:"video_list"`
 }
 
-//传入的参数：data, token, title
-func Publish(c *gin.Context) {
-	db := ConnSql.ThemodelOfSql()
-	token := c.PostForm("token") //获得body传入的token
+type ReturnAuthor struct {
+	AuthorId      uint   `json:"author_id"`
+	Name          string `json:"name"`
+	FollowCount   uint   `json:"follow_count"`
+	FollowerCount uint   `json:"follower_count"`
+	IsFollow      bool   `json:"is_follow"`
+}
 
-	//TODO: 判断传入的token是否有对应的用户
-	data, err := c.FormFile("data") //从body中获得文件
-	if err != nil {
-		c.JSON(http.StatusOK, Response{
-			Statuscode: 1,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-	//通过token 找到对应的user，查询两次表
-	var user User
-	var userlogin UserLoginInfo
-	db.Where("Token = ?", token).First(&userlogin)
-	var queryId = userlogin.UserId
-	db.Where("Id = ?", queryId).First(&user) //通过两张表进行查询
-
-	filename := filepath.Base(data.Filename)             //去除掉路径的文件名称
-	finalName := fmt.Sprintf("%d_%s", user.Id, filename) //最终存储的文件名称
-	saveFile := filepath.Join("../public/", finalName)   //拼接成为绝对路径
-
-	fmt.Println("The savepath is : ", saveFile)
-
-	if err := c.SaveUploadedFile(data, saveFile); err != nil { //进行文件的存储
-		c.JSON(http.StatusOK, Response{
-			Statuscode: 1,
-			StatusMsg:  err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, Response{
-		Statuscode: 0,
-		StatusMsg:  finalName + " uploaded successfully!",
-	})
+type ReturnVideo struct {
+	VideoId       uint         `json:"video_id"`
+	Author        ReturnAuthor `json:"author"`
+	PlayUrl       string       `json:"play_url"`
+	CoverUrl      string       `json:"cover_url"`
+	FavoriteCount uint         `json:"favorite_count"`
+	CommentCount  uint         `json:"comment_count"`
+	IsFavorite    bool         `json:"is_favorite"`
+	Title         string       `json:"title"`
 }
 
 //将视频上传到本地的服务器上面
-func Publish1(c *gin.Context) {
+func Publish(c *gin.Context) {
 	//1. 通过token 获得用户名
 	token := c.PostForm("token")
-	userId := service.GetUserByToken(token)
+	userId := service.GetUserIdByToken(token)
 	println("通过token获取到的用户id：", userId)
 	title := c.PostForm("title")
 	println("获取到的title:", title)
@@ -107,12 +86,65 @@ func Publish1(c *gin.Context) {
 	service.CreateVideo(&video)
 }
 
-//
-//func PublishList(c *gin.Context) {
-//	c.JSON(http.StatusOK, VideoListResponse{
-//		Response: Response{
-//			Statuscode: 0,
-//		},
-//		VideoList: DemoVideos,
-//	})
-//}
+//获取视频列表的方式
+func PublishList(c *gin.Context) {
+	//传入的是token(当前用户) & userid(客人用户)
+	token := c.Query("token")
+
+	hostId := service.GetUserIdByToken(token) //hostId
+	s_userId := c.Query("user_id")
+	guestId, err := strconv.ParseUint(s_userId, 10, 64)
+	if err != nil {
+		//do nothing
+		println("将userid -> uint 失败")
+	}
+	//通过userid进行用户信息的查询
+	getUser, err := service.GetUserById(uint(guestId))
+	if err != nil {
+		c.JSON(http.StatusOK, Common.Response{
+			StatusCode: 1,
+			StatusMsg:  "Not found the person",
+		})
+		return
+	}
+
+	returnAuthor := ReturnAuthor{
+		AuthorId:      uint(guestId),
+		Name:          getUser.Name,
+		FollowCount:   getUser.FollowCount,
+		FollowerCount: getUser.FollowerCount,
+		IsFollow:      service.IsFollowing(hostId, uint(guestId)),
+	}
+
+	videoList := service.GetVideoListById(uint(guestId))
+	if len(videoList) == 0 {
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response:  Common.Response{StatusCode: 1, StatusMsg: "用户的视频数目是0"},
+			VideoList: nil,
+		})
+	} else { //需要展示的资源进行返回
+		var returnVideoList []ReturnVideo
+		for i := 0; i < len(videoList); i++ {
+			returnVideo := ReturnVideo{
+				VideoId:       videoList[i].ID,
+				Author:        returnAuthor,
+				PlayUrl:       videoList[i].PlayUrl,
+				CoverUrl:      videoList[i].CoverUrl,
+				FavoriteCount: videoList[i].FavoriteCount,
+				CommentCount:  videoList[i].CommentCount,
+				Title:         videoList[i].Title,
+				IsFavorite:    service.CheckFavorite(hostId, videoList[i].ID),
+			}
+			//将video追加到最终的videoList中去
+			returnVideoList = append(returnVideoList, returnVideo)
+		}
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: Common.Response{
+				StatusCode: 0,
+				StatusMsg:  "successfully got the VideoList",
+			},
+			VideoList: returnVideoList,
+		})
+	}
+
+}

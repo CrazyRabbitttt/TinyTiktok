@@ -2,6 +2,7 @@ package Model
 
 import "gorm.io/gorm"
 
+//原始时候创建的表，不是基于struct创建的表
 type Video1 struct {
 	AuthorId      int64  `json:"author_id"`
 	PlayUrl       string `json:"play_url"`

@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func GetUserByToken(token string) int64 {
+func GetUserIdByToken(token string) uint {
 	//通过传进来的token 获得userid
 	db := ConnSql.ThemodelOfSql()
 	var username string

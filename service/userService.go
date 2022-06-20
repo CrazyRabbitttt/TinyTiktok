@@ -43,6 +43,23 @@ func CreateNewUser(userName string, passWord string) (Model.User, error) {
 
 }
 
+func GetUserById(userId uint) (Model.User, error) {
+	//数据的准备
+	db := ConnSql.ThemodelOfSql()
+	var user Model.User
+
+	//在表中查询对应的user的信息
+	result := db.Table("tik_user").Where("id = ?", userId).First(&user)
+
+	if result != nil {
+		//如果说表中的信息是不存在的，进行错误的处理
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return user, result.Error
+		}
+	}
+	return user, nil
+}
+
 /*pass the name and passwd, check if it is legal*/
 func IsUserLegal(userName string, passWord string) error {
 
