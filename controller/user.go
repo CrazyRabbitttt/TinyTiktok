@@ -147,16 +147,25 @@ func UserInfo(c *gin.Context) {
 	userID := c.Query("user_id")
 	userInfoResponse, err := UserInfoService(userID)
 
-	//没有写处理error的情况
 	if err != nil {
 		c.JSON(http.StatusOK, UserInfoResponse{
 			Response: Common.Response{
-				StatusCode: 0,
-				StatusMsg:  "登陆成功",
+				StatusCode: 1,
+				StatusMsg:  err.Error(),
 			},
-			UserList: userInfoResponse,
 		})
+		return
 	}
+
+	//如果用户是存在的，返回对应的ID和token
+	c.JSON(http.StatusOK, UserInfoResponse{
+		Response: Common.Response{
+			StatusCode: 0,
+			StatusMsg:  "登陆成功",
+		},
+		UserList: userInfoResponse,
+	})
+
 }
 
 // UserInfoService 进行用户信息的处理的函数
@@ -170,7 +179,7 @@ func UserInfoService(userID string) (UserInfoQueryResponse, error) {
 	}
 
 	//下面进行数据的读取
-	var tmpuser User
+	var tmpuser Model.User
 	db.Table("tik_user").Where("id = ?", userId).First(&tmpuser)
 
 	println(tmpuser.Id, tmpuser.Name, tmpuser.FollowCount)
@@ -184,35 +193,3 @@ func UserInfoService(userID string) (UserInfoQueryResponse, error) {
 	}
 	return tmpUserResponse, nil
 }
-
-//
-//func UserInfo(c *gin.Context) {
-//	db := ConnSql.ThemodelOfSql()
-//	userId := c.Query("user_id")
-//
-//	var dbUser User
-//
-//	fmt.Println("传入的user_id", userId)
-//	db.Table("tik_user").Where("id = ?", userId).Find(&dbUser)
-//
-//	fmt.Println("查到的用户信息：", dbUser)
-//
-//	if dbUser.Id != 0 {
-//		c.JSON(http.StatusOK, UserResponse{
-//			Response: Response{Statuscode: 0, StatusMsg: "查询用户信息成功"},
-//			User: User{
-//				Id:            dbUser.Id,
-//				Name:          dbUser.Name,
-//				FollowCount:   188,
-//				FollowerCount: 199,
-//				IsFollow:      true,
-//			},
-//		})
-//	} else {
-//		c.JSON(http.StatusBadRequest, UserLoginResponse{
-//			Response: Response{Statuscode: 1, StatusMsg: "查询失败"},
-//			UserId:   dbUser.Id,
-//		})
-//	}
-//
-//}
