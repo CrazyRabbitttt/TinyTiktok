@@ -14,10 +14,10 @@ func InitRouter(r *gin.Engine) {
 
 	//basic apis
 
-	apiRouter.GET("/feed/", controller.Feed) //feed流的handler
+	//apiRouter.GET("/feed/", controller.Feed) //feed流的handler
 	apiRouter.POST("/user/register/", controller.UserRegister)
 	apiRouter.POST("/user/login/", controller.UserLogin)
 	apiRouter.GET("/user/", controller.UserInfo)
-	apiRouter.POST("/publish/action/", controller.Publish)
-	apiRouter.GET("/publish/list/", controller.PublishList)
+	apiRouter.POST("/publish/action/", controller.Publish1)
+	//apiRouter.GET("/publish/list/", controller.PublishList)
 }

@@ -35,7 +35,7 @@ type Video struct {
 	FavoriteCount int64  `json:"favorite_count,omitempty"` //点赞总数
 	CommentCount  int64  `json:"comment_count,omitempty"`
 	IsFavorite    bool   `json:"is_favorite,omitempty"`
-	TimeChuo      int64  `json:"time_chuo"` //时间戳
+	Title         int64  `json:"time_chuo"` //时间戳
 }
 
 type User struct {

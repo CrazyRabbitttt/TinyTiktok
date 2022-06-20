@@ -69,7 +69,7 @@ func UserRegisterService(userName string, passWord string) (UserIdTokenResponse,
 	}
 	//进行token的颁发
 
-	token := newUser.Name + newUser.Password + "bing"
+	token := newUser.Name + "@" + newUser.Password + "bing"
 
 	userResponse = UserIdTokenResponse{
 		UserId: newUser.Id,
@@ -88,7 +88,7 @@ func UserLogin(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password + "bing"
+	token := username + "@" + password + "bing"
 	userLoginResponse, err := UserLoginService(username, password)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -105,11 +105,11 @@ func UserLogin(c *gin.Context) {
 }
 
 //用于提供检查等操作的辅助Login函数
-func UserLoginService(userName string, passWrod string) (UserIdTokenResponse, error) {
+func UserLoginService(userName string, passWord string) (UserIdTokenResponse, error) {
 	db := ConnSql.ThemodelOfSql()
 	var userResponse = UserIdTokenResponse{}
 	//进行数据的合法性检查
-	err := service.IsUserLegal(userName, passWrod)
+	err := service.IsUserLegal(userName, passWord)
 	if err != nil {
 		return userResponse, err
 	}
