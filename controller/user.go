@@ -130,8 +130,8 @@ func UserLoginService(userName string, passWrod string) (UserIdTokenResponse, er
 
 //用户返回信息的结构体
 type UserInfoQueryResponse struct {
-	UserId        int64  `json:"user_id"`
-	UserName      string `json:"user_name"`
+	Id            int64  `json:"id"`
+	Name          string `json:"name"`
 	FollowCount   int64  `json:"follow_count"`
 	FollowerCount int64  `json:"follower_count"`
 	IsFollow      bool   `json:"is_follow"`
@@ -139,12 +139,13 @@ type UserInfoQueryResponse struct {
 
 type UserInfoResponse struct {
 	Common.Response
-	UserList UserInfoQueryResponse `json:"user_list"`
+	UserList UserInfoQueryResponse `json:"user"`
 }
 
 //UserInfo 用户信息的主函数，传入：user_id token
 func UserInfo(c *gin.Context) {
 	userID := c.Query("user_id")
+
 	userInfoResponse, err := UserInfoService(userID)
 
 	if err != nil {
@@ -185,8 +186,8 @@ func UserInfoService(userID string) (UserInfoQueryResponse, error) {
 	println(tmpuser.Id, tmpuser.Name, tmpuser.FollowCount)
 
 	tmpUserResponse = UserInfoQueryResponse{
-		UserId:        tmpuser.Id,
-		UserName:      tmpuser.Name,
+		Id:            tmpuser.Id,
+		Name:          tmpuser.Name,
 		FollowCount:   tmpuser.FollowCount,
 		FollowerCount: tmpuser.FollowerCount,
 		IsFollow:      false,
