@@ -74,9 +74,9 @@ func Publish1(c *gin.Context) {
 		})
 		return
 	}
-	filename := filepath.Base(data.Filename)                              //去除掉路径的文件名称
-	finalName := fmt.Sprintf("%d_%s", userId, filename)                   //最终存储的文件名称
-	saveFile := filepath.Join("http://192.168.43.107/public/", finalName) //拼接成为绝对路径
+	filename := filepath.Base(data.Filename)            //去除掉路径的文件名称
+	finalName := fmt.Sprintf("%d_%s", userId, filename) //最终存储的文件名称
+	saveFile := filepath.Join("./public/", finalName)   //拼接成为绝对路径
 	println("The save path is :", saveFile)
 
 	if err := c.SaveUploadedFile(data, saveFile); err != nil { //进行文件的存储
